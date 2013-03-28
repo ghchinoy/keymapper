@@ -26,18 +26,29 @@
 #define VC_EXTRALEAN
 
 #include <windows.h>
+#include <sstream>
+#include <ShellAPI.h>
+#include <ShlObj.h>
+#include <stdlib.h>
+
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 BOOL WINAPI ConsoleEventHandler(DWORD dwCtrlType); // for graceful exit
 DWORD dwMainThread = 0; // because apparently the console event handler thread for Ctrl+C is different from the main thread
+LPCWSTR launcherexe; // path to Google Chrome App Launcher
 
 int main(int args, char* argv[])
 {
+
+	LPWSTR localAppData = 0;
+	SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &localAppData);
+	LPCWSTR launcherpath = L"\\Google\\Chrome\\Application\\app_host.exe";
+	std::wstring launcher = std::wstring(localAppData) + launcherpath;
+	launcherexe = launcher.c_str();
+
 	const char message[] =
 		"Caps Lock Remapper\n"
-		"Remaps Caps Lock to Backspace on the fly without rebooting.\n"
-		"Written by Petrus Theron http://freshcode.co/\n"
-		"Fork this on GitHub: http://github.com/pate/keymapper\n"
+		"Remaps Caps Lock to Chrome App Launcher.\n"
 		"\nPress Ctrl+C or close window to exit.\n";
 
 	DWORD count = 0;
@@ -83,10 +94,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			switch (wParam)
 			{
 			case WM_KEYDOWN:
-				keybd_event(VK_BACK, 0x8e, 0, 0);
+				//keybd_event(VK_BACK, 0x8e, 0, 0); // simulates backspace
+				ShellExecute(NULL, L"open", launcherexe,  L"--show-app-list", NULL, SW_SHOWDEFAULT);
 				return 1;
 			case WM_KEYUP:
-				keybd_event(VK_BACK, 0x8e, KEYEVENTF_KEYUP, 0);
+				//keybd_event(VK_BACK, 0x8e, KEYEVENTF_KEYUP, 0); // simulates backspace
+				ShellExecute(NULL, L"open", launcherexe,  L"--show-app-list", NULL, SW_SHOWDEFAULT);
 				return 1;
 			}
 		}
@@ -98,7 +111,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
+// Handle Ctrl-C interrupt of app
 BOOL WINAPI ConsoleEventHandler(DWORD dwCtrlType)
 {
 	switch(dwCtrlType)
