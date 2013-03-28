@@ -46,7 +46,7 @@ _ReSharper*/
 [Tt]est[Rr]esults*/
 \.hg*/
 \.hgignore
-.suo
+*.suo
 ipch/
 .sdf
 *.ReSharper.user
