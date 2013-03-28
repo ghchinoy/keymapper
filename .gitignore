@@ -49,3 +49,4 @@ _ReSharper*/
 .suo
 ipch/
 .sdf
+*.ReSharper.user
